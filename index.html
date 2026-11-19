@@ -31,13 +31,17 @@ button{font-family:inherit;touch-action:manipulation;cursor:pointer}
 .head .h.q{color:#FFD600;font-size:16px;padding:3px 0}
 #list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:20px;padding:12px 0 40vh}
 .row{display:flex;align-items:stretch;background:#fff;box-shadow:0 1px 0 #c3cad1,0 -1px 0 #c3cad1;flex:none}
-.row.act{outline:3px solid var(--ink);outline-offset:-3px}
+
 .row.free{opacity:.5}
 /* Geschlecht: Nummernfeld + Balken rechts */
 .row{position:relative}
-.row.gm .num{background:#1565C0;color:#fff}.row.gw .num{background:#E91E63;color:#fff}
-.row.gm::after,.row.gw::after{content:'';position:absolute;right:0;top:0;bottom:0;width:12px}
-.row.gm::after{background:#1565C0}.row.gw::after{background:#E91E63}
+.row.gm{box-shadow:0 0 0 4px #1565C0}.row.gw{box-shadow:0 0 0 4px #E91E63}.row.gn{box-shadow:0 0 0 4px #6D4C41}
+.row.gm .num{background:#1565C0;color:#fff}.row.gw .num{background:#E91E63;color:#fff}.row.gn .num{background:#6D4C41;color:#fff}
+.row.gm::after,.row.gw::after,.row.gn::after{content:'';position:absolute;right:0;top:0;bottom:0;width:12px}
+.row.gm::after{background:#1565C0}.row.gw::after{background:#E91E63}.row.gn::after{background:#6D4C41}
+/* ungewählte Geschlechtsfelder blass eingefärbt */
+.tile[data-c="g"][data-k="m"]:not(.sel){background:#dfe9f8;color:#0d3c7a}
+.tile[data-c="g"][data-k="w"]:not(.sel){background:#fce3ec;color:#7a0d36}
 .num{width:52px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:800;font-size:21px;font-variant-numeric:tabular-nums}
 .row.free .num{color:#8a949e}
 .del{width:34px;height:26px;border-radius:7px;border:1.5px solid #c9d0d6;background:#fff;color:#7a848e;display:flex;align-items:center;justify-content:center;padding:0}
@@ -163,7 +167,7 @@ function rowHTML(i){
      const on=r.s[c.id].includes(o.k);
      return `<button class="tile${on?' sel':''}" style="--c:${o.col};--f:${o.fg||'#fff'}" data-i="${i}" data-c="${c.id}" data-k="${o.k}">${svg(o.icon)}<span>${on||!o.off?o.label:o.off}</span></button>`}).join('')+'</div>').join('');
 }
-function makeRow(i){const d=document.createElement('div');const g=rows[i].s.g[0];d.className='row'+(rows[i].u?'':' free')+(i===act?' act':'')+(rows[i].u&&g==='m'?' gm':'')+(rows[i].u&&g==='w'?' gw':'');d.innerHTML=rowHTML(i);return d}
+function makeRow(i){const d=document.createElement('div');const g=rows[i].s.g[0];d.className='row'+(rows[i].u?'':' free')+(i===act?' act':'')+(rows[i].u&&g==='m'?' gm':'')+(rows[i].u&&g==='w'?' gw':'')+(rows[i].u&&g==='n'?' gn':'');d.innerHTML=rowHTML(i);return d}
 function pad(){let added=false;while(rows.length-1-lastUsed()<FREE){rows.push(blank());added=true}return added}
 function renderAll(keepScroll){
   const L=$('list'),st=L.scrollTop;pad();
