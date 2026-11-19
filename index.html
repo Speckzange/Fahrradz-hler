@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="de"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Radzähler">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Fahrradzähler</title>
+<style>
+:root{--ink:#111820;--muted:#4b5661;--line:#c3cad1;--bg:#e9edf1;--tw:51px;--th:64px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html,body{margin:0;height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);overflow:hidden;overscroll-behavior:none}
+button{font-family:inherit;touch-action:manipulation;cursor:pointer}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left)}
+.bar{flex:none;height:60px;background:#fff;border-bottom:2px solid var(--line);display:flex;align-items:center;padding:0 12px;gap:8px}
+.bar h1{font-size:19px;margin:0 6px 0 0;white-space:nowrap}
+.count{font-size:18px;font-weight:800;background:var(--ink);color:#fff;border-radius:10px;padding:6px 12px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.saved{font-size:12px;color:var(--muted);white-space:nowrap}
+.sp{flex:1}
+.tb{font-size:15px;font-weight:700;height:44px;padding:0 12px;border-radius:11px;border:2px solid var(--line);background:#fff;color:var(--ink);white-space:nowrap}
+.tb:active{background:#dde3e8}
+.tb:disabled{opacity:.4}
+.tb.xl{background:#1D6F42;border-color:#1D6F42;color:#fff}
+.head{flex:none;display:flex;align-items:flex-end;padding:8px 0 6px;background:#fff;border-bottom:2px solid var(--line);font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.02em}
+.head .nr{width:56px;text-align:center;align-self:center}
+.head .h{text-align:center;border-radius:8px 8px 0 0;padding:6px 0;color:#fff;margin-right:6px}
+#list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:12px;padding:12px 0 40vh}
+.row{display:flex;align-items:stretch;background:#fff;box-shadow:0 1px 0 #c3cad1,0 -1px 0 #c3cad1;flex:none}
+.row.act{outline:3px solid var(--ink);outline-offset:-3px}
+.row.free{opacity:.5}
+.num{width:56px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:800;font-size:21px;font-variant-numeric:tabular-nums}
+.row.free .num{color:#8a949e}
+.del{width:34px;height:26px;border-radius:7px;border:1.5px solid #c9d0d6;background:#fff;color:#7a848e;display:flex;align-items:center;justify-content:center;padding:0}
+.row.free .del{visibility:hidden}
+.grp{display:flex;gap:4px;padding:5px 6px;margin-right:6px}
+.tile{width:var(--tw);height:var(--th);border:2px solid #b9c1c9;background:#fff;color:#1d232a;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;font-size:9.5px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.tile svg{width:calc(var(--tw)*.55);height:calc(var(--tw)*.55)}
+.tile.sel{border-color:var(--c);background:var(--c);color:var(--f)}
+.tile:active{transform:scale(.94)}
+/* modal */
+#modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:10}
+#modal.on{display:flex}
+#modal .box{background:#fff;border-radius:18px;padding:24px;width:min(520px,90vw);box-shadow:0 20px 60px #0006}
+#modal p{font-size:19px;line-height:1.4;margin:0 0 20px}
+#modal .btns{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+#modal button{font-size:17px;font-weight:700;height:52px;padding:0 20px;border-radius:12px;border:2px solid var(--line);background:#fff}
+#modal button.pri{background:var(--ink);border-color:var(--ink);color:#fff}
+#modal button.danger{background:#C62828;border-color:#C62828;color:#fff}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:16px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:11}
+#toast.on{opacity:1}
+</style>
+</head><body>
+<div id="app">
+  <div class="bar">
+    <h1>🚲 Fahrradzähler</h1>
+    <span class="count" id="count">0 erfasst</span>
+    <span class="saved" id="saved"></span>
+    <div class="sp"></div>
+    <button class="tb" id="bUndo">↶ Rückgängig</button>
+    <button class="tb" id="bSave">💾 Sichern</button>
+    <button class="tb" id="bLoad">📂 Laden</button>
+    <button class="tb xl" id="bXlsx">⬇ Excel</button>
+    <button class="tb" id="bNew">Neu</button>
+  </div>
+  <div class="head" id="head"></div>
+  <div id="list"></div>
+</div>
+<div id="modal"><div class="box"><p id="mText"></p><div class="btns" id="mBtns"></div></div></div>
+<div id="toast"></div>
+<input type="file" id="file" accept=".json,application/json" hidden>
+<script>
+const ICONS={
+ nein:'<circle cx="24" cy="24" r="15"/><path d="M13.5 34.5 L34.5 13.5"/>',
+ unbekannt:'<path d="M16.5 17.5 a7.5 7.5 0 1 1 11 6.6 c-2.2 1.2 -3.5 2.6 -3.5 5.2 v2"/><circle cx="24" cy="38" r="1.6" fill="currentColor"/>',
+ maennlich:'<circle cx="20" cy="28" r="11"/><path d="M28 20 L40 8 M30 8 H40 V18"/>',
+ weiblich:'<circle cx="24" cy="17" r="11"/><path d="M24 28 V44 M16.5 37 H31.5"/>',
+ helm:'<path d="M5 31 C5 18 14 10 26 10 C37 10 44 18 44 28 V31 Z"/><path d="M17 13 L21 22 M27 10.5 L29 21 M36 13 L35.5 22"/><path d="M12 31 L17 40 L26 31"/>',
+ haken:'<path d="M8 25 L19 36 L41 12" stroke-width="5.5"/>',
+ handy:'<rect x="13.5" y="4" width="21" height="40" rx="4"/><path d="M21 9.5 H27"/><circle cx="24" cy="38" r="1.8" fill="currentColor"/>',
+ kopfhoerer:'<path d="M8 31 V25 a16 16 0 0 1 32 0 V31"/><rect x="4.5" y="28" width="10" height="15" rx="3.5"/><rect x="33.5" y="28" width="10" height="15" rx="3.5"/>',
+ hand:'<path d="M14 26 V11 a3 3 0 0 1 6 0 V22 M20 22 V7 a3 3 0 0 1 6 0 V22 M26 22 V9 a3 3 0 0 1 6 0 V23 M32 23 V14 a3 3 0 0 1 6 0 V30 C38 39 33 44 26 44 C20 44 17 41 14 37 L7.5 28 a3 3 0 0 1 4.5 -4 L14 26"/>',
+ pac1:"<path fill-rule=\"evenodd\" fill=\"currentColor\" stroke-width=\"1.5\" d=\"M17 24 L29.3 15.4 A15 15 0 1 0 29.3 32.6 Z M14.2 15.8 a2.1 2.1 0 1 0 4.2 0 a2.1 2.1 0 1 0 -4.2 0\"/><path d=\"M35.5 18.5 Q39 24 35.5 29.5\"/><path d=\"M40.5 14 Q46.5 24 40.5 34\"/>",
+ auto:'<path d="M8 33 H3.5 V25 L10 22.5 L16 14 H32 L38.5 22.5 L44.5 25 V33 H40"/><path d="M18.5 33 H29.5"/><path d="M10 22.5 H38.5 M24 14 V22.5"/><circle cx="13.5" cy="33" r="5"/><circle cx="34.5" cy="33" r="5"/>',
+ fahrrad:'<circle cx="10.5" cy="31" r="8.5"/><circle cx="37.5" cy="31" r="8.5"/><path d="M10.5 31 L23 31 L17.5 17 M14 17 H21 M10.5 31 L18.5 19.5 H31.5 L23 31 M37.5 31 L30 12 H35"/>',
+ fussgeher:'<circle cx="26" cy="7.5" r="4.2"/><path d="M24.5 14 L21 28 M21 28 L14.5 42 M21 28 L28.5 34 L30.5 43 M23.5 17 L16 24 M23.5 17 L31 23.5"/>'
+};
+const NE='#4E5A65';
+const CATS=[
+ {id:'g',name:'Geschlecht',short:'Geschl.',multi:false,opts:[
+  {k:'n',label:'unklar',icon:'unbekannt',col:NE,x:'unklar'},
+  {k:'m',label:'männlich',icon:'maennlich',col:'#1565C0',x:'männlich'},
+  {k:'w',label:'weiblich',icon:'weiblich',col:'#9C27B0',x:'weiblich'}]},
+ {id:'h',name:'Helm',short:'Helm',multi:false,opts:[
+  {k:'n',label:'kein Helm',icon:'nein',col:NE},
+  {k:'j',label:'Helm',icon:'helm',col:'#2E7D32',x:''}]},
+ {id:'s',name:'Störfaktoren',short:'Störfaktoren',multi:true,opts:[
+  {k:'n',label:'keine',icon:'nein',col:NE},
+  {k:'ja',label:'ja',icon:'haken',col:'#E65100',x:'ja'},
+  {k:'hy',label:'Handy',icon:'handy',col:'#E65100',x:'Handy'},
+  {k:'kh',label:'Kopfhörer',icon:'kopfhoerer',col:'#E65100',x:'Kopfhörer'},
+  {k:'eh',label:'1 Hand',icon:'hand',col:'#E65100',x:'1 Hand'},
+  {k:'ge',label:'Gespräch',icon:'pac1',col:'#E65100',x:'Gespräch'}]},
+ {id:'i',name:'Negative Interaktion',short:'Neg. Interaktion',multi:true,opts:[
+  {k:'n',label:'keine',icon:'nein',col:NE},
+  {k:'a',label:'Auto',icon:'auto',col:'#F9A825',fg:'#111',x:'Auto'},
+  {k:'f',label:'Fahrrad',icon:'fahrrad',col:'#F9A825',fg:'#111',x:'Fahrrad'},
+  {k:'p',label:'Fußgeher',icon:'fussgeher',col:'#F9A825',fg:'#111',x:'Fußgeher'}]},
+ {id:'u',name:'Unfallgefahr',short:'Unfallgefahr',multi:true,opts:[
+  {k:'n',label:'keine',icon:'nein',col:NE},
+  {k:'a',label:'Auto',icon:'auto',col:'#C62828',x:'Auto'},
+  {k:'f',label:'Fahrrad',icon:'fahrrad',col:'#C62828',x:'Fahrrad'},
+  {k:'p',label:'Fußgeher',icon:'fussgeher',col:'#C62828',x:'Fußgeher'}]}];
+const CATCOL={g:'#1565C0',h:'#2E7D32',s:'#E65100',i:'#F9A825',u:'#C62828'};
+const TINT={g:'#e3edf9',h:'#e5f2e6',s:'#fdeadb',i:'#fdf3d3',u:'#f9e1e1'};
+const FREE=10, KEY='fahrradzaehler_v1';
+const $=id=>document.getElementById(id);
+const svg=n=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
+const TRASH='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
+
+let rows=[], act=-1, undo=[];
+const blank=()=>({u:0,s:{g:['n'],h:['n'],s:['n'],i:['n'],u:['n']}});
+const lastUsed=()=>{for(let i=rows.length-1;i>=0;i--)if(rows[i].u)return i;return -1};
+const usedCount=()=>rows.reduce((a,r)=>a+r.u,0);
+
+/* ---------- storage ---------- */
+function persist(){
+  const lu=lastUsed();
+  try{localStorage.setItem(KEY,JSON.stringify({v:1,rows:rows.slice(0,lu+1)}));
+      const d=new Date();$('saved').textContent='✓ gespeichert '+d.toTimeString().slice(0,5);}
+  catch(e){$('saved').textContent='⚠ Speichern fehlgeschlagen';}
+}
+function restore(){
+  try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&Array.isArray(d.rows))rows=d.rows.filter(valid);}catch(e){rows=[]}
+}
+function valid(r){return r&&typeof r==='object'&&r.s&&CATS.every(c=>Array.isArray(r.s[c.id])&&r.s[c.id].length&&r.s[c.id].every(k=>c.opts.some(o=>o.k===k)))}
+function snapshot(){undo.push(JSON.stringify(rows));if(undo.length>200)undo.shift();$('bUndo').disabled=false}
+
+/* ---------- rendering ---------- */
+function layout(){
+  const W=document.getElementById('app').clientWidth;
+  const fixed=56+5*(12+6)+14*4+4;
+  const tw=Math.max(40,Math.min(70,Math.floor((W-fixed)/19)));
+  document.documentElement.style.setProperty('--tw',tw+'px');
+  document.documentElement.style.setProperty('--th',Math.round(tw*1.25)+'px');
+  $('head').innerHTML='<div class="nr">Nr.</div>'+CATS.map(c=>`<div class="h" style="width:${c.opts.length*tw+(c.opts.length-1)*4+12}px;background:${CATCOL[c.id]};${c.id==='i'?'color:#111':''}">${c.short}</div>`).join('');
+}
+function rowHTML(i){
+  const r=rows[i];
+  return `<div class="num">${i+1}<button class="del" data-del="${i}" aria-label="Zeile löschen">${TRASH}</button></div>`+
+   CATS.map(c=>`<div class="grp" style="background:${TINT[c.id]}">`+c.opts.map(o=>{
+     const on=r.s[c.id].includes(o.k);
+     return `<button class="tile${on?' sel':''}" style="--c:${o.col};--f:${o.fg||'#fff'}" data-i="${i}" data-c="${c.id}" data-k="${o.k}">${svg(o.icon)}<span>${o.label}</span></button>`}).join('')+'</div>').join('');
+}
+function makeRow(i){const d=document.createElement('div');d.className='row'+(rows[i].u?'':' free')+(i===act?' act':'');d.innerHTML=rowHTML(i);return d}
+function pad(){let added=false;while(rows.length-1-lastUsed()<FREE){rows.push(blank());added=true}return added}
+function renderAll(keepScroll){
+  const L=$('list'),st=L.scrollTop;pad();
+  const f=document.createDocumentFragment();rows.forEach((_,i)=>f.appendChild(makeRow(i)));
+  L.replaceChildren(f);
+  if(keepScroll)L.scrollTop=st;else scrollToRow(Math.max(0,lastUsed()),false);
+  updCount();
+}
+function refreshRow(i){const L=$('list');const old=L.children[i];if(old)L.replaceChild(makeRow(i),old)}
+function appendMissing(){const L=$('list');for(let i=L.children.length;i<rows.length;i++)L.appendChild(makeRow(i))}
+function updCount(){const n=usedCount();$('count').textContent=n+' erfasst';$('bUndo').disabled=!undo.length}
+function scrollToRow(i,smooth){const L=$('list'),el=L.children[i];if(!el)return;
+  L.scrollTo({top:el.offsetTop-L.offsetTop-L.clientHeight*0.2,behavior:smooth?'smooth':'auto'})}
+function follow(i){const L=$('list'),el=L.children[i];if(!el)return;
+  const y=el.offsetTop-L.offsetTop-L.scrollTop;if(y>L.clientHeight*0.55)scrollToRow(i,true)}
+function setAct(i){const L=$('list');if(act>=0&&L.children[act])L.children[act].classList.remove('act');act=i;if(L.children[i])L.children[i].classList.add('act')}
+
+/* ---------- logic ---------- */
+function tap(i,cid,k){
+  snapshot();
+  const c=CATS.find(x=>x.id===cid);let s=rows[i].s[cid].slice();
+  if(k==='n')s=['n'];
+  else if(c.multi){s=s.filter(x=>x!=='n');s=s.includes(k)?s.filter(x=>x!==k):[...s,k];if(!s.length)s=['n'];}
+  else s=[k];
+  if(cid==='s'){const spec=s.filter(x=>x!=='n'&&x!=='ja');
+    if(k==='ja'&&!s.includes('ja'))s=['n'];                         // ja abwählen -> alle Störfaktoren weg
+    else if(spec.length&&!s.includes('ja'))s.push('ja');}           // ja immer aktiv, wenn ein Störfaktor gewählt ist
+  rows[i].s[cid]=s;rows[i].u=1;
+  act=i;refreshRow(i);setAct(i);
+  if(pad())appendMissing();
+  updCount();persist();follow(i);wake();
+}
+async function delRow(i){
+  if(!await ask(`Radfahrer Nr. ${i+1} löschen? Die Nummern darunter rücken nach.`,[['Abbrechen'],['Löschen','danger',1]]))return;
+  snapshot();rows.splice(i,1);if(act>=rows.length)act=-1;renderAll(true);persist();toast(`Nr. ${i+1} gelöscht`);
+}
+function doUndo(){if(!undo.length)return;const old=rows;rows=JSON.parse(undo.pop());pad();
+  const L=$('list');
+  if(rows.length===old.length||rows.length<old.length){
+    for(let i=0;i<rows.length;i++)if(JSON.stringify(rows[i])!==JSON.stringify(old[i]))refreshRow(i);
+    while(L.children.length>rows.length)L.lastChild.remove();
+    appendMissing();updCount();
+  } else renderAll(true);
+  persist();toast('Rückgängig gemacht')}
+
+/* ---------- modal / toast ---------- */
+function ask(text,btns){return new Promise(res=>{$('mText').textContent=text;
+  $('mBtns').innerHTML='';btns.forEach(([l,cls,val])=>{const b=document.createElement('button');b.textContent=l;if(cls)b.className=cls;b.onclick=()=>{$('modal').classList.remove('on');res(val)};$('mBtns').appendChild(b)});
+  $('modal').classList.add('on')})}
+let tt;function toast(t){const x=$('toast');x.textContent=t;x.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>x.classList.remove('on'),1800)}
+
+/* ---------- files ---------- */
+const stamp=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`};
+async function deliver(blob,name){
+  const file=new File([blob],name,{type:blob.type});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file]});return}catch(e){if(e.name==='AbortError')return}
+  }
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);
+}
+function backup(){
+  const lu=lastUsed();
+  const data={app:'fahrradzaehler',v:1,gespeichert:new Date().toISOString(),anzahl:usedCount(),rows:rows.slice(0,lu+1)};
+  deliver(new Blob([JSON.stringify(data)],{type:'application/json'}),`Fahrradzaehlung_${stamp()}.json`);
+}
+async function loadFile(f){
+  try{const d=JSON.parse(await f.text());
+    if(!d||d.app!=='fahrradzaehler'||!Array.isArray(d.rows)||!d.rows.every(valid))throw 0;
+    const n=d.rows.reduce((a,r)=>a+(r.u?1:0),0);
+    if(usedCount()&&!await ask(`Die aktuelle Zählung (${usedCount()} Radfahrer) wird durch die Datei ersetzt (${n} Radfahrer). Fortfahren?`,[['Abbrechen'],['Ersetzen','danger',1]]))return;
+    snapshot();rows=d.rows;act=-1;renderAll(false);persist();toast(`${n} Radfahrer geladen`);
+  }catch(e){ask('Diese Datei ist keine gültige Fahrradzähler-Sicherung.',[['OK','pri']])}
+}
+async function newCount(){
+  if(!usedCount())return;
+  const r=await ask(`Neue Zählung beginnen? Die aktuellen ${usedCount()} Radfahrer werden aus der App entfernt. Vorher sichern?`,[['Abbrechen'],['Erst sichern','pri','save'],['Ohne Sichern löschen','danger','del']]);
+  if(r==='save'){backup();return}
+  if(r==='del'){snapshot();rows=[];act=-1;renderAll(false);persist();toast('Neue Zählung gestartet')}
+}
+
+/* ---------- Excel (xlsx ohne Internet) ---------- */
+function xlsxColumns(){
+  const cols=[{h:'Nr',cat:null,f:(r,i)=>i+1}];
+  const add=(h,cat,fn)=>cols.push({h,cat,f:fn});
+  add('Geschlecht_männlich','g',r=>+r.s.g.includes('m'));
+  add('Geschlecht_weiblich','g',r=>+r.s.g.includes('w'));
+  add('Geschlecht_unklar','g',r=>+r.s.g.includes('n'));
+  add('Helm','h',r=>+r.s.h.includes('j'));
+  CATS[2].opts.slice(1).forEach(o=>add('Stör_'+o.x,'s',r=>+r.s.s.includes(o.k)));
+  CATS[3].opts.slice(1).forEach(o=>add('Interaktion_'+o.x,'i',r=>+r.s.i.includes(o.k)));
+  CATS[4].opts.slice(1).forEach(o=>add('Unfall_'+o.x,'u',r=>+r.s.u.includes(o.k)));
+  return cols;
+}
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const colL=n=>{let s='';n++;while(n){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26)}return s};
+function buildXlsx(){
+  const cols=xlsxColumns();
+  const data=[];rows.forEach((r,i)=>{if(r.u)data.push(cols.map(c=>c.f(r,i)))});
+  const hs={null:1,g:2,h:3,s:4,i:5,u:6};
+  let sd='<row r="1" ht="30" customHeight="1">'+cols.map((c,j)=>`<c r="${colL(j)}1" t="inlineStr" s="${hs[c.cat]}"><is><t>${esc(c.h)}</t></is></c>`).join('')+'</row>';
+  data.forEach((d,k)=>{const rn=k+2;sd+=`<row r="${rn}">`+d.map((v,j)=>`<c r="${colL(j)}${rn}" s="8"><v>${v}</v></c>`).join('')+'</row>'});
+  const sr=data.length+2;
+  if(data.length){sd+=`<row r="${sr}"><c r="A${sr}" t="inlineStr" s="7"><is><t>Summe</t></is></c>`+cols.slice(1).map((c,j)=>{const L=colL(j+1);const sum=data.reduce((a,d)=>a+d[j+1],0);return `<c r="${L}${sr}" s="7"><f>SUM(${L}2:${L}${sr-1})</f><v>${sum}</v></c>`}).join('')+'</row>';}
+  const widths='<cols><col min="1" max="1" width="7" customWidth="1"/>'+`<col min="2" max="${cols.length}" width="13" customWidth="1"/>`+'</cols>';
+  const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>${widths}<sheetData>${sd}</sheetData></worksheet>`;
+  const fill=c=>`<fill><patternFill patternType="solid"><fgColor rgb="FF${c}"/><bgColor indexed="64"/></patternFill></fill>`;
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>
+<fills count="8"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>${fill('333333')}${fill('1565C0')}${fill('2E7D32')}${fill('E65100')}${fill('F9A825')}${fill('C62828')}</fills>
+<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="9"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf fontId="1" fillId="3" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf fontId="1" fillId="4" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf fontId="1" fillId="5" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf fontId="2" fillId="6" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf fontId="1" fillId="7" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center"/></xf>
+<xf fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment horizontal="center"/></xf></cellXfs>
+<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+  const files={
+   '[Content_Types].xml':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`,
+   '_rels/.rels':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`,
+   'xl/workbook.xml':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Zählung" sheetId="1" r:id="rId1"/></sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`,
+   'xl/_rels/workbook.xml.rels':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`,
+   'xl/worksheets/sheet1.xml':sheet,
+   'xl/styles.xml':styles};
+  return zip(files);
+}
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(b){let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
+function zip(files){
+  const enc=new TextEncoder(),parts=[],central=[];let off=0;
+  for(const [name,txt] of Object.entries(files)){
+    const nb=enc.encode(name),db=enc.encode(txt),crc=crc32(db);
+    const h=new DataView(new ArrayBuffer(30));
+    h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);h.setUint16(10,0,true);h.setUint16(12,0x21,true);
+    h.setUint32(14,crc,true);h.setUint32(18,db.length,true);h.setUint32(22,db.length,true);h.setUint16(26,nb.length,true);h.setUint16(28,0,true);
+    parts.push(new Uint8Array(h.buffer),nb,db);
+    const c=new DataView(new ArrayBuffer(46));
+    c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(10,0,true);c.setUint16(12,0,true);c.setUint16(14,0x21,true);
+    c.setUint32(16,crc,true);c.setUint32(20,db.length,true);c.setUint32(24,db.length,true);c.setUint16(28,nb.length,true);c.setUint32(42,off,true);
+    central.push(new Uint8Array(c.buffer),nb);
+    off+=30+nb.length+db.length;
+  }
+  const csize=central.reduce((a,b)=>a+b.length,0);
+  const e=new DataView(new ArrayBuffer(22));const n=Object.keys(files).length;
+  e.setUint32(0,0x06054b50,true);e.setUint16(8,n,true);e.setUint16(10,n,true);e.setUint32(12,csize,true);e.setUint32(16,off,true);
+  return new Blob([...parts,...central,new Uint8Array(e.buffer)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function exportXlsx(){if(!usedCount()){toast('Noch keine Radfahrer erfasst');return}deliver(buildXlsx(),`Fahrradzaehlung_${stamp()}.xlsx`)}
+
+/* ---------- Bildschirm wach halten ---------- */
+let wl=null;async function wake(){try{if('wakeLock' in navigator&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>wl=null)}}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')wl=null});
+
+/* ---------- events ---------- */
+$('list').addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.del!==undefined){delRow(+t.dataset.del);return}
+  if(t.dataset.k)tap(+t.dataset.i,t.dataset.c,t.dataset.k);
+});
+$('bUndo').onclick=doUndo;$('bSave').onclick=backup;$('bXlsx').onclick=exportXlsx;$('bNew').onclick=newCount;
+$('bLoad').onclick=()=>$('file').click();
+$('file').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)loadFile(f)};
+addEventListener('resize',()=>{layout();});
+addEventListener('pagehide',persist);
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+restore();layout();renderAll(false);updCount();
+if(usedCount())$('saved').textContent='✓ letzte Zählung geladen';
+</script>
+</body></html>
