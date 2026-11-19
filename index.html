@@ -29,7 +29,7 @@ button{font-family:inherit;touch-action:manipulation;cursor:pointer}
 .head .nr{width:52px;text-align:center;align-self:center}
 .head .h{text-align:center;border-radius:8px 8px 0 0;padding:6px 0;color:#fff;margin-right:5px}
 .head .h.q{color:#FFD600;font-size:16px;padding:3px 0}
-#list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:20px;padding:12px 0 40vh}
+#list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:20px;padding:12px 0 0}
 .row{display:flex;align-items:stretch;background:#fff;box-shadow:0 1px 0 #c3cad1,0 -1px 0 #c3cad1;flex:none}
 
 .row.free{opacity:.5}
@@ -168,12 +168,21 @@ function rowHTML(i){
      return `<button class="tile${on?' sel':''}" style="--c:${o.col};--f:${o.fg||'#fff'}" data-i="${i}" data-c="${c.id}" data-k="${o.k}">${svg(o.icon)}<span>${on||!o.off?o.label:o.off}</span></button>`}).join('')+'</div>').join('');
 }
 function makeRow(i){const d=document.createElement('div');const g=rows[i].s.g[0];d.className='row'+(rows[i].u?'':' free')+(i===act?' act':'')+(rows[i].u&&g==='m'?' gm':'')+(rows[i].u&&g==='w'?' gw':'')+(rows[i].u&&g==='n'?' gn':'');d.innerHTML=rowHTML(i);return d}
-function pad(){let added=false;while(rows.length-1-lastUsed()<FREE){rows.push(blank());added=true}return added}
+// genau so viele Zeilen, wie auf den Bildschirm passen, wenn die letzte ausgefüllte Zeile oben steht
+const GAP=20,PADT=12;
+function step(){const r=$('list').children[0];return (r?r.offsetHeight:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--th'))+10)+GAP}
+function visN(){return Math.max(1,Math.floor(($('list').clientHeight-PADT+GAP)/step()))}
+function pad(){const need=Math.max(visN(),lastUsed()+visN());let ch=false;
+  while(rows.length<need){rows.push(blank());ch=true}
+  while(rows.length>need&&!rows[rows.length-1].u){rows.pop();ch=true}
+  return ch}
+function syncDom(){const L=$('list');while(L.children.length>rows.length)L.lastChild.remove();appendMissing()}
 function renderAll(keepScroll){
   const L=$('list'),st=L.scrollTop;pad();
   const f=document.createDocumentFragment();rows.forEach((_,i)=>f.appendChild(makeRow(i)));
   L.replaceChildren(f);
-  if(keepScroll)L.scrollTop=st;else scrollToRow(Math.max(0,lastUsed()),false);
+  if(pad())syncDom();
+  if(keepScroll)L.scrollTop=st;else L.scrollTop=L.scrollHeight;
   updCount();
 }
 function refreshRow(i){const L=$('list');const old=L.children[i];if(old)L.replaceChild(makeRow(i),old)}
@@ -182,19 +191,15 @@ function updCount(){const n=usedCount();$('count').textContent=n+' erfasst';$('b
 // Zeile i ganz nach oben schieben (oben bleibt immer eine ausgefüllte Zeile sichtbar)
 function scrollToRow(i,smooth){const L=$('list'),el=L.children[i];if(!el)return;
   L.scrollTo({top:Math.max(0,el.offsetTop-L.offsetTop-8),behavior:smooth?'smooth':'auto'})}
-// nur scrollen, wenn unter der letzten erfassten Zeile höchstens noch 1 freie Zeile sichtbar ist
-function follow(){const L=$('list'),lu=lastUsed();if(lu<0)return;
-  const luEl=L.children[lu];if(!luEl)return;
-  const top=L.scrollTop,bottom=top+L.clientHeight,y=luEl.offsetTop-L.offsetTop;
-  if(y+luEl.offsetHeight<top)return;                 // letzte Zeile gar nicht im Bild (z. B. weit hochgescrollt): nichts tun
-  let vis=0;
-  for(let j=lu+1;j<rows.length;j++){const el=L.children[j];if(!el)break;if(el.offsetTop-L.offsetTop<bottom-10)vis++;else break}
-  if(vis<=1)scrollToRow(lu,true)}
+// automatisch genau eine Zeile weiter, wenn unter der neu ausgefüllten Zeile keine freie Zeile mehr ganz sichtbar ist
+function follow(i){const L=$('list'),nx=L.children[i+1];if(!nx)return;
+  const bottom=L.scrollTop+L.clientHeight,nb=nx.offsetTop-L.offsetTop+nx.offsetHeight;
+  if(nb>bottom+1)L.scrollBy({top:step(),behavior:'smooth'})}
 function setAct(i){const L=$('list');if(act>=0&&L.children[act])L.children[act].classList.remove('act');act=i;if(L.children[i])L.children[i].classList.add('act')}
 
 /* ---------- logic ---------- */
 function tap(i,cid,k){
-  snapshot();
+  snapshot();const wasNew=!rows[i].u;
   const c=CATS.find(x=>x.id===cid);let s=rows[i].s[cid].slice();
   if(c.toggle)s=s.includes(k)?[]:[k];
   else if(c.binary)s=s.includes(k)?['n']:[k];
@@ -206,8 +211,8 @@ function tap(i,cid,k){
     else if(spec.length&&!s.includes('ja'))s.push('ja');}           // ja immer aktiv, wenn ein Störfaktor gewählt ist
   rows[i].s[cid]=s;rows[i].u=1;
   setAct(i);refreshRow(i);
-  if(pad())appendMissing();
-  updCount();persist();follow();wake();
+  if(pad())syncDom();
+  updCount();persist();if(wasNew&&i===lastUsed())follow(i);wake();
 }
 async function delRow(i){
   if(!await ask(`Radfahrer Nr. ${i+1} löschen? Die Nummern darunter rücken nach.`,[['Abbrechen'],['Löschen','danger',1]]))return;
@@ -345,7 +350,7 @@ $('list').addEventListener('click',e=>{
 $('bUndo').onclick=doUndo;$('bSave').onclick=backup;$('bXlsx').onclick=exportXlsx;$('bNew').onclick=newCount;
 $('bLoad').onclick=()=>$('file').click();
 $('file').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)loadFile(f)};
-addEventListener('resize',()=>{layout();});
+addEventListener('resize',()=>{layout();if(pad())syncDom();});
 addEventListener('pagehide',persist);
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 restore();layout();renderAll(false);updCount();
