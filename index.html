@@ -26,17 +26,18 @@ button{font-family:inherit;touch-action:manipulation;cursor:pointer}
 .tb:disabled{opacity:.4}
 .tb.xl{background:#1D6F42;border-color:#1D6F42;color:#fff}
 .head{flex:none;display:flex;align-items:flex-end;padding:8px 0 6px;background:#fff;border-bottom:2px solid var(--line);font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.02em}
-.head .nr{width:56px;text-align:center;align-self:center}
-.head .h{text-align:center;border-radius:8px 8px 0 0;padding:6px 0;color:#fff;margin-right:6px}
+.head .nr{width:52px;text-align:center;align-self:center}
+.head .h{text-align:center;border-radius:8px 8px 0 0;padding:6px 0;color:#fff;margin-right:5px}
+.head .h.q{color:#FFD600;font-size:16px;padding:3px 0}
 #list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:12px;padding:12px 0 40vh}
 .row{display:flex;align-items:stretch;background:#fff;box-shadow:0 1px 0 #c3cad1,0 -1px 0 #c3cad1;flex:none}
 .row.act{outline:3px solid var(--ink);outline-offset:-3px}
 .row.free{opacity:.5}
-.num{width:56px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:800;font-size:21px;font-variant-numeric:tabular-nums}
+.num{width:52px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:800;font-size:21px;font-variant-numeric:tabular-nums}
 .row.free .num{color:#8a949e}
 .del{width:34px;height:26px;border-radius:7px;border:1.5px solid #c9d0d6;background:#fff;color:#7a848e;display:flex;align-items:center;justify-content:center;padding:0}
 .row.free .del{visibility:hidden}
-.grp{display:flex;gap:4px;padding:5px 6px;margin-right:6px}
+.grp{display:flex;gap:4px;padding:5px 4px;margin-right:5px}
 .tile{width:var(--tw);height:var(--th);border:2px solid #b9c1c9;background:#fff;color:#1d232a;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;font-size:9.5px;font-weight:700;letter-spacing:-.02em;line-height:1}
 .tile svg{width:calc(var(--tw)*.55);height:calc(var(--tw)*.55)}
 .tile.sel{border-color:var(--c);background:var(--c);color:var(--f)}
@@ -86,7 +87,8 @@ const ICONS={
  pac1:"<path fill-rule=\"evenodd\" fill=\"currentColor\" stroke-width=\"1.5\" d=\"M17 24 L29.3 15.4 A15 15 0 1 0 29.3 32.6 Z M14.2 15.8 a2.1 2.1 0 1 0 4.2 0 a2.1 2.1 0 1 0 -4.2 0\"/><path d=\"M35.5 18.5 Q39 24 35.5 29.5\"/><path d=\"M40.5 14 Q46.5 24 40.5 34\"/>",
  auto:'<path d="M8 33 H3.5 V25 L10 22.5 L16 14 H32 L38.5 22.5 L44.5 25 V33 H40"/><path d="M18.5 33 H29.5"/><path d="M10 22.5 H38.5 M24 14 V22.5"/><circle cx="13.5" cy="33" r="5"/><circle cx="34.5" cy="33" r="5"/>',
  fahrrad:'<circle cx="10.5" cy="31" r="8.5"/><circle cx="37.5" cy="31" r="8.5"/><path d="M10.5 31 L23 31 L17.5 17 M14 17 H21 M10.5 31 L18.5 19.5 H31.5 L23 31 M37.5 31 L30 12 H35"/>',
- fussgeher:'<circle cx="26" cy="7.5" r="4.2"/><path d="M24.5 14 L21 28 M21 28 L14.5 42 M21 28 L28.5 34 L30.5 43 M23.5 17 L16 24 M23.5 17 L31 23.5"/>'
+ fussgeher:'<circle cx="26" cy="7.5" r="4.2"/><path d="M24.5 14 L21 28 M21 28 L14.5 42 M21 28 L28.5 34 L30.5 43 M23.5 17 L16 24 M23.5 17 L31 23.5"/>',
+ unsicher:'<circle cx="24" cy="24" r="19"/><path d="M18.5 19 a5.5 5.5 0 1 1 8 4.9 c-1.6 .9 -2.5 1.9 -2.5 3.8 v1.3"/><circle cx="24" cy="34.5" r="1.9" fill="currentColor"/>'
 };
 const NE='#4E5A65';
 const CATS=[
@@ -113,16 +115,18 @@ const CATS=[
   {k:'n',label:'keine',icon:'nein',col:NE},
   {k:'a',label:'Auto',icon:'auto',col:'#C62828',x:'Auto'},
   {k:'f',label:'Fahrrad',icon:'fahrrad',col:'#C62828',x:'Fahrrad'},
-  {k:'p',label:'Fußgeher',icon:'fussgeher',col:'#C62828',x:'Fußgeher'}]}];
-const CATCOL={g:'#1565C0',h:'#2E7D32',s:'#E65100',i:'#F9A825',u:'#C62828'};
-const TINT={g:'#e3edf9',h:'#e5f2e6',s:'#fdeadb',i:'#fdf3d3',u:'#f9e1e1'};
+  {k:'p',label:'Fußgeher',icon:'fussgeher',col:'#C62828',x:'Fußgeher'}]},
+ {id:'q',name:'Unsicher',short:'?',toggle:true,opts:[
+  {k:'q',label:'unsicher',icon:'unsicher',col:'#111820',fg:'#FFD600',x:'Unsicher'}]}];
+const CATCOL={g:'#1565C0',h:'#2E7D32',s:'#E65100',i:'#F9A825',u:'#C62828',q:'#111820'};
+const TINT={g:'#e3edf9',h:'#e5f2e6',s:'#fdeadb',i:'#fdf3d3',u:'#f9e1e1',q:'#e4e4e4'};
 const FREE=10, KEY='fahrradzaehler_v1';
 const $=id=>document.getElementById(id);
 const svg=n=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
 const TRASH='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
 
 let rows=[], act=-1, undo=[];
-const blank=()=>({u:0,s:{g:['n'],h:['n'],s:['n'],i:['n'],u:['n']}});
+const blank=()=>({u:0,s:{g:['n'],h:['n'],s:['n'],i:['n'],u:['n'],q:[]}});
 const lastUsed=()=>{for(let i=rows.length-1;i>=0;i--)if(rows[i].u)return i;return -1};
 const usedCount=()=>rows.reduce((a,r)=>a+r.u,0);
 
@@ -136,17 +140,17 @@ function persist(){
 function restore(){
   try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&Array.isArray(d.rows))rows=d.rows.filter(valid);}catch(e){rows=[]}
 }
-function valid(r){return r&&typeof r==='object'&&r.s&&CATS.every(c=>Array.isArray(r.s[c.id])&&r.s[c.id].length&&r.s[c.id].every(k=>c.opts.some(o=>o.k===k)))}
+function valid(r){if(!r||typeof r!=='object'||!r.s)return false;if(!Array.isArray(r.s.q))r.s.q=[];return CATS.every(c=>Array.isArray(r.s[c.id])&&(c.toggle||r.s[c.id].length)&&r.s[c.id].every(k=>c.opts.some(o=>o.k===k)))}
 function snapshot(){undo.push(JSON.stringify(rows));if(undo.length>200)undo.shift();$('bUndo').disabled=false}
 
 /* ---------- rendering ---------- */
 function layout(){
   const W=document.getElementById('app').clientWidth;
-  const fixed=56+5*(12+6)+14*4+4;
-  const tw=Math.max(40,Math.min(70,Math.floor((W-fixed)/19)));
+  const fixed=52+6*(8+5)+14*4+6;
+  const tw=Math.max(40,Math.min(70,Math.floor((W-fixed)/20)));
   document.documentElement.style.setProperty('--tw',tw+'px');
   document.documentElement.style.setProperty('--th',Math.round(tw*1.25)+'px');
-  $('head').innerHTML='<div class="nr">Nr.</div>'+CATS.map(c=>`<div class="h" style="width:${c.opts.length*tw+(c.opts.length-1)*4+12}px;background:${CATCOL[c.id]};${c.id==='i'?'color:#111':''}">${c.short}</div>`).join('');
+  $('head').innerHTML='<div class="nr">Nr.</div>'+CATS.map(c=>`<div class="h ${c.id}" style="width:${c.opts.length*tw+(c.opts.length-1)*4+8}px;background:${CATCOL[c.id]};${c.id==='i'?'color:#111':''}">${c.short}</div>`).join('');
 }
 function rowHTML(i){
   const r=rows[i];
@@ -177,14 +181,15 @@ function setAct(i){const L=$('list');if(act>=0&&L.children[act])L.children[act].
 function tap(i,cid,k){
   snapshot();
   const c=CATS.find(x=>x.id===cid);let s=rows[i].s[cid].slice();
-  if(k==='n')s=['n'];
+  if(c.toggle)s=s.includes(k)?[]:[k];
+  else if(k==='n')s=['n'];
   else if(c.multi){s=s.filter(x=>x!=='n');s=s.includes(k)?s.filter(x=>x!==k):[...s,k];if(!s.length)s=['n'];}
   else s=[k];
   if(cid==='s'){const spec=s.filter(x=>x!=='n'&&x!=='ja');
     if(k==='ja'&&!s.includes('ja'))s=['n'];                         // ja abwählen -> alle Störfaktoren weg
     else if(spec.length&&!s.includes('ja'))s.push('ja');}           // ja immer aktiv, wenn ein Störfaktor gewählt ist
   rows[i].s[cid]=s;rows[i].u=1;
-  act=i;refreshRow(i);setAct(i);
+  setAct(i);refreshRow(i);
   if(pad())appendMissing();
   updCount();persist();follow(i);wake();
 }
@@ -248,6 +253,7 @@ function xlsxColumns(){
   CATS[2].opts.slice(1).forEach(o=>add('Stör_'+o.x,'s',r=>+r.s.s.includes(o.k)));
   CATS[3].opts.slice(1).forEach(o=>add('Interaktion_'+o.x,'i',r=>+r.s.i.includes(o.k)));
   CATS[4].opts.slice(1).forEach(o=>add('Unfall_'+o.x,'u',r=>+r.s.u.includes(o.k)));
+  add('Unsicher','q',r=>+((r.s.q||[]).includes('q')));
   return cols;
 }
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -255,7 +261,7 @@ const colL=n=>{let s='';n++;while(n){const m=(n-1)%26;s=String.fromCharCode(65+m
 function buildXlsx(){
   const cols=xlsxColumns();
   const data=[];rows.forEach((r,i)=>{if(r.u)data.push(cols.map(c=>c.f(r,i)))});
-  const hs={null:1,g:2,h:3,s:4,i:5,u:6};
+  const hs={null:1,g:2,h:3,s:4,i:5,u:6,q:1};
   let sd='<row r="1" ht="30" customHeight="1">'+cols.map((c,j)=>`<c r="${colL(j)}1" t="inlineStr" s="${hs[c.cat]}"><is><t>${esc(c.h)}</t></is></c>`).join('')+'</row>';
   data.forEach((d,k)=>{const rn=k+2;sd+=`<row r="${rn}">`+d.map((v,j)=>`<c r="${colL(j)}${rn}" s="8"><v>${v}</v></c>`).join('')+'</row>'});
   const sr=data.length+2;
