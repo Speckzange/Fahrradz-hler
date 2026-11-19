@@ -100,16 +100,16 @@ const CATS=[
   {k:'j',label:'Helm',off:'kein Helm',icon:'helm',col:'#2E7D32',x:''}]},
  {id:'s',name:'Störfaktoren',short:'Störfaktoren',multi:true,opts:[
   {k:'n',label:'keine',icon:'nein',col:NE},
-  {k:'ja',label:'ja',icon:'haken',col:'#E65100',x:'ja'},
-  {k:'hy',label:'Handy',icon:'handy',col:'#E65100',x:'Handy'},
-  {k:'kh',label:'Kopfhörer',icon:'kopfhoerer',col:'#E65100',x:'Kopfhörer'},
-  {k:'eh',label:'1 Hand',icon:'hand',col:'#E65100',x:'1 Hand'},
-  {k:'ge',label:'Gespräch',icon:'pac1',col:'#E65100',x:'Gespräch'}]},
+  {k:'ja',label:'ja',icon:'haken',col:'#F9A825',fg:'#111',x:'ja'},
+  {k:'hy',label:'Handy',icon:'handy',col:'#F9A825',fg:'#111',x:'Handy'},
+  {k:'kh',label:'Kopfhörer',icon:'kopfhoerer',col:'#F9A825',fg:'#111',x:'Kopfhörer'},
+  {k:'eh',label:'1 Hand',icon:'hand',col:'#F9A825',fg:'#111',x:'1 Hand'},
+  {k:'ge',label:'Gespräch',icon:'pac1',col:'#F9A825',fg:'#111',x:'Gespräch'}]},
  {id:'i',name:'Negative Interaktion',short:'Neg. Interaktion',multi:true,opts:[
   {k:'n',label:'keine',icon:'nein',col:NE},
-  {k:'a',label:'Auto',icon:'auto',col:'#F9A825',fg:'#111',x:'Auto'},
-  {k:'f',label:'Fahrrad',icon:'fahrrad',col:'#F9A825',fg:'#111',x:'Fahrrad'},
-  {k:'p',label:'Fußgeher',icon:'fussgeher',col:'#F9A825',fg:'#111',x:'Fußgeher'}]},
+  {k:'a',label:'Auto',icon:'auto',col:'#E65100',x:'Auto'},
+  {k:'f',label:'Fahrrad',icon:'fahrrad',col:'#E65100',x:'Fahrrad'},
+  {k:'p',label:'Fußgeher',icon:'fussgeher',col:'#E65100',x:'Fußgeher'}]},
  {id:'u',name:'Unfallgefahr',short:'Unfallgefahr',multi:true,opts:[
   {k:'n',label:'keine',icon:'nein',col:NE},
   {k:'a',label:'Auto',icon:'auto',col:'#C62828',x:'Auto'},
@@ -117,8 +117,8 @@ const CATS=[
   {k:'p',label:'Fußgeher',icon:'fussgeher',col:'#C62828',x:'Fußgeher'}]},
  {id:'q',name:'Unsicher',short:'?',toggle:true,opts:[
   {k:'q',label:'unsicher',icon:'unsicher',col:'#111820',fg:'#FFD600',x:'Unsicher'}]}];
-const CATCOL={g:'#1565C0',h:'#2E7D32',s:'#E65100',i:'#F9A825',u:'#C62828',q:'#111820'};
-const TINT={g:'#c6daf3',h:'#c8e6cb',s:'#fbcfae',i:'#fae19a',u:'#f3bdbd',q:'#cfd3d7'};
+const CATCOL={g:'#1565C0',h:'#2E7D32',s:'#F9A825',i:'#E65100',u:'#C62828',q:'#111820'};
+const TINT={g:'#c6daf3',h:'#c8e6cb',s:'#fae19a',i:'#fbcfae',u:'#f3bdbd',q:'#cfd3d7'};
 const FREE=10, KEY='fahrradzaehler_v1';
 const $=id=>document.getElementById(id);
 const svg=n=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
@@ -149,7 +149,7 @@ function layout(){
   const tw=Math.max(40,Math.min(70,Math.floor((W-fixed)/19)));
   document.documentElement.style.setProperty('--tw',tw+'px');
   document.documentElement.style.setProperty('--th',Math.round(tw*1.25)+'px');
-  $('head').innerHTML='<div class="nr">Nr.</div>'+CATS.map(c=>`<div class="h ${c.id}" style="width:${c.opts.length*tw+(c.opts.length-1)*4+8}px;background:${CATCOL[c.id]};${c.id==='i'?'color:#111':''}">${c.short}</div>`).join('');
+  $('head').innerHTML='<div class="nr">Nr.</div>'+CATS.map(c=>`<div class="h ${c.id}" style="width:${c.opts.length*tw+(c.opts.length-1)*4+8}px;background:${CATCOL[c.id]};${c.id==='s'?'color:#111':''}">${c.short}</div>`).join('');
 }
 function rowHTML(i){
   const r=rows[i];
@@ -261,7 +261,7 @@ const colL=n=>{let s='';n++;while(n){const m=(n-1)%26;s=String.fromCharCode(65+m
 function buildXlsx(){
   const cols=xlsxColumns();
   const data=[];rows.forEach((r,i)=>{if(r.u)data.push(cols.map(c=>c.f(r,i)))});
-  const hs={null:1,g:2,h:3,s:4,i:5,u:6,q:1};
+  const hs={null:1,g:2,h:3,s:5,i:4,u:6,q:1};
   let sd='<row r="1" ht="30" customHeight="1">'+cols.map((c,j)=>`<c r="${colL(j)}1" t="inlineStr" s="${hs[c.cat]}"><is><t>${esc(c.h)}</t></is></c>`).join('')+'</row>';
   data.forEach((d,k)=>{const rn=k+2;sd+=`<row r="${rn}">`+d.map((v,j)=>`<c r="${colL(j)}${rn}" s="8"><v>${v}</v></c>`).join('')+'</row>'});
   const sr=data.length+2;
