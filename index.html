@@ -29,7 +29,7 @@ button{font-family:inherit;touch-action:manipulation;cursor:pointer}
 .head .nr{width:52px;text-align:center;align-self:center}
 .head .h{text-align:center;border-radius:8px 8px 0 0;padding:6px 0;color:#fff;margin-right:5px}
 .head .h.q{color:#FFD600;font-size:16px;padding:3px 0}
-#list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:12px;padding:12px 0 40vh}
+#list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:20px;padding:12px 0 40vh}
 .row{display:flex;align-items:stretch;background:#fff;box-shadow:0 1px 0 #c3cad1,0 -1px 0 #c3cad1;flex:none}
 .row.act{outline:3px solid var(--ink);outline-offset:-3px}
 .row.free{opacity:.5}
@@ -96,9 +96,8 @@ const CATS=[
   {k:'n',label:'unklar',icon:'unbekannt',col:NE,x:'unklar'},
   {k:'m',label:'männlich',icon:'maennlich',col:'#1565C0',x:'männlich'},
   {k:'w',label:'weiblich',icon:'weiblich',col:'#9C27B0',x:'weiblich'}]},
- {id:'h',name:'Helm',short:'Helm',multi:false,opts:[
-  {k:'n',label:'kein Helm',icon:'nein',col:NE},
-  {k:'j',label:'Helm',icon:'helm',col:'#2E7D32',x:''}]},
+ {id:'h',name:'Helm',short:'Helm',binary:true,opts:[
+  {k:'j',label:'Helm',off:'kein Helm',icon:'helm',col:'#2E7D32',x:''}]},
  {id:'s',name:'Störfaktoren',short:'Störfaktoren',multi:true,opts:[
   {k:'n',label:'keine',icon:'nein',col:NE},
   {k:'ja',label:'ja',icon:'haken',col:'#E65100',x:'ja'},
@@ -119,7 +118,7 @@ const CATS=[
  {id:'q',name:'Unsicher',short:'?',toggle:true,opts:[
   {k:'q',label:'unsicher',icon:'unsicher',col:'#111820',fg:'#FFD600',x:'Unsicher'}]}];
 const CATCOL={g:'#1565C0',h:'#2E7D32',s:'#E65100',i:'#F9A825',u:'#C62828',q:'#111820'};
-const TINT={g:'#e3edf9',h:'#e5f2e6',s:'#fdeadb',i:'#fdf3d3',u:'#f9e1e1',q:'#e4e4e4'};
+const TINT={g:'#c6daf3',h:'#c8e6cb',s:'#fbcfae',i:'#fae19a',u:'#f3bdbd',q:'#cfd3d7'};
 const FREE=10, KEY='fahrradzaehler_v1';
 const $=id=>document.getElementById(id);
 const svg=n=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
@@ -140,14 +139,14 @@ function persist(){
 function restore(){
   try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&Array.isArray(d.rows))rows=d.rows.filter(valid);}catch(e){rows=[]}
 }
-function valid(r){if(!r||typeof r!=='object'||!r.s)return false;if(!Array.isArray(r.s.q))r.s.q=[];return CATS.every(c=>Array.isArray(r.s[c.id])&&(c.toggle||r.s[c.id].length)&&r.s[c.id].every(k=>c.opts.some(o=>o.k===k)))}
+function valid(r){if(!r||typeof r!=='object'||!r.s)return false;if(!Array.isArray(r.s.q))r.s.q=[];return CATS.every(c=>Array.isArray(r.s[c.id])&&(c.toggle||r.s[c.id].length)&&r.s[c.id].every(k=>(c.binary&&k==='n')||c.opts.some(o=>o.k===k)))}
 function snapshot(){undo.push(JSON.stringify(rows));if(undo.length>200)undo.shift();$('bUndo').disabled=false}
 
 /* ---------- rendering ---------- */
 function layout(){
   const W=document.getElementById('app').clientWidth;
   const fixed=52+6*(8+5)+14*4+6;
-  const tw=Math.max(40,Math.min(70,Math.floor((W-fixed)/20)));
+  const tw=Math.max(40,Math.min(70,Math.floor((W-fixed)/19)));
   document.documentElement.style.setProperty('--tw',tw+'px');
   document.documentElement.style.setProperty('--th',Math.round(tw*1.25)+'px');
   $('head').innerHTML='<div class="nr">Nr.</div>'+CATS.map(c=>`<div class="h ${c.id}" style="width:${c.opts.length*tw+(c.opts.length-1)*4+8}px;background:${CATCOL[c.id]};${c.id==='i'?'color:#111':''}">${c.short}</div>`).join('');
@@ -157,7 +156,7 @@ function rowHTML(i){
   return `<div class="num">${i+1}<button class="del" data-del="${i}" aria-label="Zeile löschen">${TRASH}</button></div>`+
    CATS.map(c=>`<div class="grp" style="background:${TINT[c.id]}">`+c.opts.map(o=>{
      const on=r.s[c.id].includes(o.k);
-     return `<button class="tile${on?' sel':''}" style="--c:${o.col};--f:${o.fg||'#fff'}" data-i="${i}" data-c="${c.id}" data-k="${o.k}">${svg(o.icon)}<span>${o.label}</span></button>`}).join('')+'</div>').join('');
+     return `<button class="tile${on?' sel':''}" style="--c:${o.col};--f:${o.fg||'#fff'}" data-i="${i}" data-c="${c.id}" data-k="${o.k}">${svg(o.icon)}<span>${on||!o.off?o.label:o.off}</span></button>`}).join('')+'</div>').join('');
 }
 function makeRow(i){const d=document.createElement('div');d.className='row'+(rows[i].u?'':' free')+(i===act?' act':'');d.innerHTML=rowHTML(i);return d}
 function pad(){let added=false;while(rows.length-1-lastUsed()<FREE){rows.push(blank());added=true}return added}
@@ -182,6 +181,7 @@ function tap(i,cid,k){
   snapshot();
   const c=CATS.find(x=>x.id===cid);let s=rows[i].s[cid].slice();
   if(c.toggle)s=s.includes(k)?[]:[k];
+  else if(c.binary)s=s.includes(k)?['n']:[k];
   else if(k==='n')s=['n'];
   else if(c.multi){s=s.filter(x=>x!=='n');s=s.includes(k)?s.filter(x=>x!==k):[...s,k];if(!s.length)s=['n'];}
   else s=[k];
