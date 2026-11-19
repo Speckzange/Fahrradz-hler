@@ -39,6 +39,8 @@ button{font-family:inherit;touch-action:manipulation;cursor:pointer}
 .row.gm .num{background:#1565C0;color:#fff}.row.gw .num{background:#E91E63;color:#fff}.row.gn .num{background:#6D4C41;color:#fff}
 .row.gm::after,.row.gw::after,.row.gn::after{content:'';position:absolute;right:0;top:0;bottom:0;width:12px}
 .row.gm::after{background:#1565C0}.row.gw::after{background:#E91E63}.row.gn::after{background:#6D4C41}
+/* kein Helm = grau wie "keine" */
+.tile[data-c="h"]:not(.sel){background:#4E5A65;border-color:#4E5A65;color:#fff}
 /* ungewählte Geschlechtsfelder blass eingefärbt */
 .tile[data-c="g"][data-k="m"]:not(.sel){background:#dfe9f8;color:#0d3c7a}
 .tile[data-c="g"][data-k="w"]:not(.sel){background:#fce3ec;color:#7a0d36}
@@ -60,13 +62,57 @@ button{font-family:inherit;touch-action:manipulation;cursor:pointer}
 #modal button{font-size:17px;font-weight:700;height:52px;padding:0 20px;border-radius:12px;border:2px solid var(--line);background:#fff}
 #modal button.pri{background:var(--ink);border-color:var(--ink);color:#fff}
 #modal button.danger{background:#C62828;border-color:#C62828;color:#fff}
+/* Zählungen: Dropdown oben */
+.sbtn{height:44px;padding:0 12px;border-radius:11px;border:2px solid var(--ink);background:var(--ink);color:#fff;font-size:17px;font-weight:800;display:flex;align-items:center;gap:8px;white-space:nowrap;max-width:300px}
+.sbtn .nm{overflow:hidden;text-overflow:ellipsis}
+.sbtn .ar{font-size:12px;opacity:.8}
+#menu{position:fixed;top:calc(env(safe-area-inset-top) + 58px);left:calc(env(safe-area-inset-left) + 12px);min-width:320px;max-height:70vh;overflow-y:auto;background:#fff;border:2px solid var(--line);border-radius:14px;box-shadow:0 14px 40px #0004;padding:6px;z-index:9;display:none}
+#menu.on{display:block}
+#menu button{display:flex;align-items:center;gap:10px;width:100%;height:50px;padding:0 12px;border:0;border-radius:10px;background:none;color:var(--ink);font-size:17px;font-weight:700;text-align:left}
+#menu button:active{background:#e3e8ed}
+#menu button .ck{width:20px;text-align:center}
+#menu button .n{margin-left:auto;font-size:14px;font-weight:800;background:#e3e8ed;border-radius:7px;padding:2px 8px;font-variant-numeric:tabular-nums}
+#menu button.cur{background:#eef1f4}
+#menu hr{border:0;border-top:2px solid var(--line);margin:6px 4px}
+#menu button.red{color:#C62828}
+#modal input{width:100%;font-size:19px;padding:12px;border-radius:10px;border:2px solid var(--line);margin:0 0 18px;-webkit-user-select:text;user-select:text}
+/* Darkmode */
+html.dark{--ink:#e8ecf0;--muted:#9aa5b0;--line:#38424c;--bg:#0e1318}
+html.dark .bar,html.dark .head{background:#161d24;border-color:#2c353e}
+html.dark .tb{background:#1e262e;color:#e8ecf0;border-color:#3a444e}
+html.dark .tb.xl{background:#1D6F42;border-color:#1D6F42;color:#fff}
+html.dark .tb:active{background:#2a343e}
+html.dark .count{background:#e8ecf0;color:#0e1318}
+html.dark .row{background:#161d24}
+html.dark .row:not(.gm):not(.gw):not(.gn){box-shadow:0 1px 0 #2c353e,0 -1px 0 #2c353e}
+html.dark .tile{background:#232c35;border-color:#3e4954;color:#eef1f4}
+html.dark .tile.sel{border-color:var(--c);background:var(--c);color:var(--f)}
+html.dark .tile.sel[data-c="g"][data-k="n"]{background:#8d6450;border-color:#d7b8a6}
+html.dark .tile.sel[data-c="q"]{box-shadow:0 0 0 2px #FFD600}
+html.dark .head .h.q{box-shadow:inset 0 0 0 2px #FFD600}
+html.dark .del{background:#232c35;border-color:#3e4954;color:#aab4be}
+html.dark .row.free .num{color:#5d6873}
+html.dark .tile[data-c="g"][data-k="m"]:not(.sel){background:#1d2e48;color:#9cc0f5}
+html.dark .tile[data-c="g"][data-k="w"]:not(.sel){background:#47202f;color:#f5a3c2}
+html.dark .sbtn{background:#e8ecf0;border-color:#e8ecf0;color:#0e1318}
+html.dark #menu{background:#1e262e;border-color:#3a444e}
+html.dark #menu button.cur{background:#2a343e}
+html.dark #menu button .n{background:#2c353e}
+html.dark #menu button:active{background:#323d48}
+html.dark #menu button.red{color:#ff8a80}
+html.dark #modal .box{background:#1e262e;color:#e8ecf0}
+html.dark #modal button{background:#2a343e;color:#e8ecf0;border-color:#3a444e}
+html.dark #modal button.pri{background:#e8ecf0;color:#0e1318;border-color:#e8ecf0}
+html.dark #modal button.danger{background:#C62828;border-color:#C62828;color:#fff}
+html.dark #modal input{background:#0e1318;color:#e8ecf0}
+html.dark #toast{background:#e8ecf0;color:#0e1318}
 #toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:16px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:11}
 #toast.on{opacity:1}
 </style>
 </head><body>
 <div id="app">
   <div class="bar">
-    <h1>🚲 Fahrradzähler</h1>
+    <button class="sbtn" id="sbtn" aria-label="Zählung wählen">🚲 <span class="nm" id="sname">Zählung 1</span><span class="ar">▼</span></button>
     <span class="count" id="count">0 erfasst</span>
     <span class="saved" id="saved"></span>
     <div class="sp"></div>
@@ -74,12 +120,13 @@ button{font-family:inherit;touch-action:manipulation;cursor:pointer}
     <button class="tb" id="bSave">💾 Sichern</button>
     <button class="tb" id="bLoad">📂 Laden</button>
     <button class="tb xl" id="bXlsx">⬇ Excel</button>
-    <button class="tb" id="bNew">Neu</button>
+    <button class="tb" id="bTheme" aria-label="Hell/Dunkel">🌙</button>
   </div>
   <div class="head" id="head"></div>
   <div id="list"></div>
 </div>
-<div id="modal"><div class="box"><p id="mText"></p><div class="btns" id="mBtns"></div></div></div>
+<div id="menu"></div>
+<div id="modal"><div class="box"><p id="mText"></p><input id="mIn" hidden maxlength="31"><div class="btns" id="mBtns"></div></div></div>
 <div id="toast"></div>
 <input type="file" id="file" accept=".json,application/json" hidden>
 <script>
@@ -104,7 +151,7 @@ const CATS=[
  {id:'g',name:'Geschlecht',short:'Geschl.',multi:false,opts:[
   {k:'m',label:'männlich',icon:'maennlich',col:'#1565C0',x:'männlich'},
   {k:'w',label:'weiblich',icon:'weiblich',col:'#E91E63',x:'weiblich'},
-  {k:'n',label:'unklar',icon:'unbekannt',col:NE,x:'unklar'}]},
+  {k:'n',label:'unklar',icon:'unbekannt',col:'#6D4C41',x:'unklar'}]},
  {id:'h',name:'Helm',short:'Helm',binary:true,opts:[
   {k:'j',label:'Helm',off:'kein Helm',icon:'helm',col:'#2E7D32',x:''}]},
  {id:'s',name:'Störfaktoren',short:'Störfaktoren',multi:true,opts:[
@@ -127,8 +174,10 @@ const CATS=[
  {id:'q',name:'Unsicher',short:'?',toggle:true,opts:[
   {k:'q',label:'unsicher',icon:'unsicher',col:'#111820',fg:'#FFD600',x:'Unsicher'}]}];
 const CATCOL={g:'#6D4C41',h:'#2E7D32',s:'#F9A825',i:'#E65100',u:'#C62828',q:'#111820'};
-const TINT={g:'#d3bcad',h:'#b3dbb7',s:'#f7d672',i:'#f8bd91',u:'#eda6a6',q:'#bfc5cc'};
-const FREE=10, KEY='fahrradzaehler_v1';
+const TINT_L={g:'#d3bcad',h:'#b3dbb7',s:'#f7d672',i:'#f8bd91',u:'#eda6a6',q:'#bfc5cc'};
+const TINT_D={g:'#6e4a36',h:'#22682e',s:'#8a6800',i:'#94440f',u:'#8c2727',q:'#3e4852'};
+let TINT=TINT_L;
+const KEY='fahrradzaehler_v2', KEY1='fahrradzaehler_v1', THEME='fahrradzaehler_theme';
 const $=id=>document.getElementById(id);
 const svg=n=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
 const TRASH='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
@@ -139,14 +188,22 @@ const lastUsed=()=>{for(let i=rows.length-1;i>=0;i--)if(rows[i].u)return i;retur
 const usedCount=()=>rows.reduce((a,r)=>a+r.u,0);
 
 /* ---------- storage ---------- */
+// S = alle Blätter; rows = Zeilen des aktuellen Blatts
+let S={cur:0,sheets:[]};const UNDO={};
+const cnt=r=>r.reduce((a,x)=>a+(x.u?1:0),0);
 function persist(){
-  const lu=lastUsed();
-  try{localStorage.setItem(KEY,JSON.stringify({v:1,rows:rows.slice(0,lu+1)}));
+  const lu=lastUsed();S.sheets[S.cur].rows=rows.slice(0,lu+1);
+  try{localStorage.setItem(KEY,JSON.stringify({v:2,cur:S.cur,sheets:S.sheets}));
       const d=new Date();$('saved').textContent='✓ gespeichert '+d.toTimeString().slice(0,5);}
   catch(e){$('saved').textContent='⚠ Speichern fehlgeschlagen';}
+  renderTabs();
 }
 function restore(){
-  try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d&&Array.isArray(d.rows))rows=d.rows.filter(valid);}catch(e){rows=[]}
+  try{const d=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(d&&Array.isArray(d.sheets)&&d.sheets.length){S.sheets=d.sheets.map(x=>({name:String(x.name||'Zählung'),rows:(x.rows||[]).filter(valid)}));S.cur=Math.min(Math.max(0,d.cur|0),S.sheets.length-1)}}catch(e){}
+  if(!S.sheets.length){let r=[];try{const d=JSON.parse(localStorage.getItem(KEY1)||'null');if(d&&Array.isArray(d.rows))r=d.rows.filter(valid)}catch(e){}
+    S={cur:0,sheets:[{name:'Zählung 1',rows:r}]}}
+  rows=S.sheets[S.cur].rows.map(x=>x);undo=UNDO[S.cur]=[];
 }
 function valid(r){if(!r||typeof r!=='object'||!r.s)return false;if(!Array.isArray(r.s.q))r.s.q=[];return CATS.every(c=>Array.isArray(r.s[c.id])&&(c.toggle||r.s[c.id].length)&&r.s[c.id].every(k=>(c.binary&&k==='n')||c.opts.some(o=>o.k===k)))}
 function snapshot(){undo.push(JSON.stringify(rows));if(undo.length>200)undo.shift();$('bUndo').disabled=false}
@@ -197,6 +254,34 @@ function follow(i){const L=$('list'),nx=L.children[i+1];if(!nx)return;
   if(nb>bottom+1)L.scrollBy({top:step(),behavior:'smooth'})}
 function setAct(i){const L=$('list');if(act>=0&&L.children[act])L.children[act].classList.remove('act');act=i;if(L.children[i])L.children[i].classList.add('act')}
 
+/* ---------- Blätter ---------- */
+function renderTabs(){
+  $('sname').textContent=S.sheets[S.cur].name;
+  $('menu').innerHTML=S.sheets.map((x,j)=>`<button class="${j===S.cur?'cur':''}" data-t="${j}"><span class="ck">${j===S.cur?'✓':''}</span>${esc(x.name)}<span class="n">${j===S.cur?usedCount():cnt(x.rows)}</span></button>`).join('')+
+   '<hr><button data-t="add"><span class="ck">＋</span>Neue Zählung</button><button data-t="ren"><span class="ck">✎</span>Aktuelle umbenennen</button><button class="red" data-t="del"><span class="ck">🗑</span>Aktuelle löschen</button>';
+}
+const menu=on=>$('menu').classList.toggle('on',on);
+function openSheet(j){persist();UNDO[S.cur]=undo;S.cur=j;rows=S.sheets[j].rows.map(x=>x);undo=UNDO[j]||(UNDO[j]=[]);act=-1;renderAll(false);persist();
+}
+function nextName(){let n=S.sheets.length+1;while(S.sheets.some(x=>x.name==='Zählung '+n))n++;return 'Zählung '+n}
+function uniq(name){let n=name,k=2;while(S.sheets.some(x=>x.name===n))n=name+' ('+(k++)+')';return n}
+async function addSheet(){const name=await askText('Name der neuen Zählung:',nextName());if(name===null)return;
+  persist();S.sheets.push({name:uniq(name||nextName()),rows:[]});openSheet(S.sheets.length-1);toast('Neue Zählung angelegt')}
+async function sheetMenu(r){const sh=S.sheets[S.cur];
+  if(r==='ren'){const n=await askText('Neuer Name:',sh.name);if(n){sh.name=n===sh.name?n:uniq(n);persist();}}
+  if(r==='del'){
+    if(usedCount()){const c=await ask(`„${sh.name}“ mit ${usedCount()} Radfahrern endgültig löschen? Vorher sichern?`,[['Abbrechen'],['Erst sichern','pri','save'],['Löschen','danger','del']]);
+      if(c==='save'){backup();return}if(c!=='del')return}
+    const name=sh.name;S.sheets.splice(S.cur,1);
+    const U={};Object.keys(UNDO).forEach(k=>{k=+k;if(k<S.cur)U[k]=UNDO[k];else if(k>S.cur)U[k-1]=UNDO[k]});Object.keys(UNDO).forEach(k=>delete UNDO[k]);Object.assign(UNDO,U);
+    if(!S.sheets.length)S.sheets.push({name:'Zählung 1',rows:[]});
+    S.cur=Math.min(S.cur,S.sheets.length-1);rows=S.sheets[S.cur].rows.map(x=>x);undo=UNDO[S.cur]||(UNDO[S.cur]=[]);act=-1;renderAll(false);persist();toast(`„${name}“ gelöscht`)}
+}
+/* ---------- Hell / Dunkel ---------- */
+function setTheme(d){document.documentElement.classList.toggle('dark',d);TINT=d?TINT_D:TINT_L;$('bTheme').textContent=d?'☀️':'🌙';
+  document.querySelector('meta[name=theme-color]').content=d?'#161d24':'#ffffff';try{localStorage.setItem(THEME,d?'d':'l')}catch(e){}}
+function toggleTheme(){setTheme(!document.documentElement.classList.contains('dark'));layout();renderAll(true)}
+
 /* ---------- logic ---------- */
 function tap(i,cid,k){
   snapshot();const wasNew=!rows[i].u;
@@ -231,6 +316,11 @@ function doUndo(){if(!undo.length)return;const old=rows;rows=JSON.parse(undo.pop
 function ask(text,btns){return new Promise(res=>{$('mText').textContent=text;
   $('mBtns').innerHTML='';btns.forEach(([l,cls,val])=>{const b=document.createElement('button');b.textContent=l;if(cls)b.className=cls;b.onclick=()=>{$('modal').classList.remove('on');res(val)};$('mBtns').appendChild(b)});
   $('modal').classList.add('on')})}
+function askText(text,def){return new Promise(res=>{const I=$('mIn');$('mText').textContent=text;I.hidden=false;I.value=def;
+  const done=v=>{$('modal').classList.remove('on');I.hidden=true;res(v)};
+  $('mBtns').innerHTML='';[['Abbrechen','',null],['OK','pri',1]].forEach(([l,cls,v])=>{const b=document.createElement('button');b.textContent=l;if(cls)b.className=cls;b.onclick=()=>done(v&&I.value.trim().replace(/[\\\/?*\[\]:]/g,'').slice(0,31));$('mBtns').appendChild(b)});
+  I.onkeydown=e=>{if(e.key==='Enter')done(I.value.trim().replace(/[\\\/?*\[\]:]/g,'').slice(0,31))};
+  $('modal').classList.add('on');setTimeout(()=>{I.focus();I.select()},50)})}
 let tt;function toast(t){const x=$('toast');x.textContent=t;x.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>x.classList.remove('on'),1800)}
 
 /* ---------- files ---------- */
@@ -244,25 +334,22 @@ async function deliver(blob,name){
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);
 }
 function backup(){
-  const lu=lastUsed();
-  const data={app:'fahrradzaehler',v:1,gespeichert:new Date().toISOString(),anzahl:usedCount(),rows:rows.slice(0,lu+1)};
+  persist();const total=S.sheets.reduce((a,x)=>a+cnt(x.rows),0);
+  const data={app:'fahrradzaehler',v:2,gespeichert:new Date().toISOString(),anzahl:total,sheets:S.sheets};
   deliver(new Blob([JSON.stringify(data)],{type:'application/json'}),`Fahrradzaehlung_${stamp()}.json`);
 }
+// Laden fügt die Zählungen aus der Datei als neue Blätter hinzu, nichts wird überschrieben
 async function loadFile(f){
-  try{const d=JSON.parse(await f.text());
-    if(!d||d.app!=='fahrradzaehler'||!Array.isArray(d.rows)||!d.rows.every(valid))throw 0;
-    const n=d.rows.reduce((a,r)=>a+(r.u?1:0),0);
-    if(usedCount()&&!await ask(`Die aktuelle Zählung (${usedCount()} Radfahrer) wird durch die Datei ersetzt (${n} Radfahrer). Fortfahren?`,[['Abbrechen'],['Ersetzen','danger',1]]))return;
-    snapshot();rows=d.rows;act=-1;renderAll(false);persist();toast(`${n} Radfahrer geladen`);
+  try{const d=JSON.parse(await f.text());if(!d||d.app!=='fahrradzaehler')throw 0;
+    let sh;if(Array.isArray(d.sheets))sh=d.sheets;else if(Array.isArray(d.rows))sh=[{name:'Geladen '+f.name.replace(/\.json$/i,'').replace(/^Fahrradzaehlung_/,''),rows:d.rows}];else throw 0;
+    if(!sh.every(x=>x&&Array.isArray(x.rows)&&x.rows.every(valid)))throw 0;
+    persist();
+    const add=sh.filter(x=>cnt(x.rows));if(!add.length){toast('Datei enthält keine Radfahrer');return}
+    const first=S.sheets.length,n=add.reduce((a,x)=>a+cnt(x.rows),0);
+    add.forEach(x=>S.sheets.push({name:uniq(String(x.name||'Geladen').slice(0,31)),rows:x.rows}));
+    openSheet(first);toast(`${add.length} Zählung${add.length>1?'en':''} mit ${n} Radfahrern geladen`);
   }catch(e){ask('Diese Datei ist keine gültige Fahrradzähler-Sicherung.',[['OK','pri']])}
 }
-async function newCount(){
-  if(!usedCount())return;
-  const r=await ask(`Neue Zählung beginnen? Die aktuellen ${usedCount()} Radfahrer werden aus der App entfernt. Vorher sichern?`,[['Abbrechen'],['Erst sichern','pri','save'],['Ohne Sichern löschen','danger','del']]);
-  if(r==='save'){backup();return}
-  if(r==='del'){snapshot();rows=[];act=-1;renderAll(false);persist();toast('Neue Zählung gestartet')}
-}
-
 /* ---------- Excel (xlsx ohne Internet) ---------- */
 function xlsxColumns(){
   const cols=[{h:'Nr',cat:null,f:(r,i)=>i+1}];
@@ -279,16 +366,18 @@ function xlsxColumns(){
 }
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const colL=n=>{let s='';n++;while(n){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26)}return s};
-function buildXlsx(){
+function sheetXml(rs){
   const cols=xlsxColumns();
-  const data=[];rows.forEach((r,i)=>{if(r.u)data.push(cols.map(c=>c.f(r,i)))});
+  const data=[];rs.forEach((r,i)=>{if(r.u)data.push(cols.map(c=>c.f(r,i)))});
   const hs={null:1,g:2,h:3,s:5,i:4,u:6,q:1};
   let sd='<row r="1" ht="30" customHeight="1">'+cols.map((c,j)=>`<c r="${colL(j)}1" t="inlineStr" s="${hs[c.cat]}"><is><t>${esc(c.h)}</t></is></c>`).join('')+'</row>';
   data.forEach((d,k)=>{const rn=k+2;sd+=`<row r="${rn}">`+d.map((v,j)=>`<c r="${colL(j)}${rn}" s="8"><v>${v}</v></c>`).join('')+'</row>'});
   const sr=data.length+2;
   if(data.length){sd+=`<row r="${sr}"><c r="A${sr}" t="inlineStr" s="7"><is><t>Summe</t></is></c>`+cols.slice(1).map((c,j)=>{const L=colL(j+1);const sum=data.reduce((a,d)=>a+d[j+1],0);return `<c r="${L}${sr}" s="7"><f>SUM(${L}2:${L}${sr-1})</f><v>${sum}</v></c>`}).join('')+'</row>';}
   const widths='<cols><col min="1" max="1" width="7" customWidth="1"/>'+`<col min="2" max="${cols.length}" width="13" customWidth="1"/>`+'</cols>';
-  const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>${widths}<sheetData>${sd}</sheetData></worksheet>`;
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>${widths}<sheetData>${sd}</sheetData></worksheet>`;
+}
+function buildXlsx(list){
   const fill=c=>`<fill><patternFill patternType="solid"><fgColor rgb="FF${c}"/><bgColor indexed="64"/></patternFill></fill>`;
   const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
 <fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>
@@ -306,12 +395,12 @@ function buildXlsx(){
 <xf fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment horizontal="center"/></xf></cellXfs>
 <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
   const files={
-   '[Content_Types].xml':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`,
+   '[Content_Types].xml':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>${list.map((_,j)=>`<Override PartName="/xl/worksheets/sheet${j+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`,
    '_rels/.rels':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`,
-   'xl/workbook.xml':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Zählung" sheetId="1" r:id="rId1"/></sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`,
-   'xl/_rels/workbook.xml.rels':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`,
-   'xl/worksheets/sheet1.xml':sheet,
+   'xl/workbook.xml':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${list.map((x,j)=>`<sheet name="${esc(x.name)}" sheetId="${j+1}" r:id="rId${j+1}"/>`).join('')}</sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`,
+   'xl/_rels/workbook.xml.rels':`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${list.map((_,j)=>`<Relationship Id="rId${j+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${j+1}.xml"/>`).join('')}<Relationship Id="rId${list.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`,
    'xl/styles.xml':styles};
+  list.forEach((x,j)=>files[`xl/worksheets/sheet${j+1}.xml`]=sheetXml(x.rows));
   return zip(files);
 }
 const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
@@ -335,7 +424,8 @@ function zip(files){
   e.setUint32(0,0x06054b50,true);e.setUint16(8,n,true);e.setUint16(10,n,true);e.setUint32(12,csize,true);e.setUint32(16,off,true);
   return new Blob([...parts,...central,new Uint8Array(e.buffer)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
 }
-function exportXlsx(){if(!usedCount()){toast('Noch keine Radfahrer erfasst');return}deliver(buildXlsx(),`Fahrradzaehlung_${stamp()}.xlsx`)}
+// Excel: jede Zählung als eigenes Blatt
+function exportXlsx(){persist();const list=S.sheets.filter(x=>cnt(x.rows));if(!list.length){toast('Noch keine Radfahrer erfasst');return}deliver(buildXlsx(list),`Fahrradzaehlung_${stamp()}.xlsx`)}
 
 /* ---------- Bildschirm wach halten ---------- */
 let wl=null;async function wake(){try{if('wakeLock' in navigator&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>wl=null)}}catch(e){}}
@@ -347,13 +437,18 @@ $('list').addEventListener('click',e=>{
   if(t.dataset.del!==undefined){delRow(+t.dataset.del);return}
   if(t.dataset.k)tap(+t.dataset.i,t.dataset.c,t.dataset.k);
 });
-$('bUndo').onclick=doUndo;$('bSave').onclick=backup;$('bXlsx').onclick=exportXlsx;$('bNew').onclick=newCount;
+$('bUndo').onclick=doUndo;$('bSave').onclick=backup;$('bXlsx').onclick=exportXlsx;$('bTheme').onclick=toggleTheme;
+$('sbtn').onclick=e=>{e.stopPropagation();menu(!$('menu').classList.contains('on'))};
+$('menu').addEventListener('click',e=>{const t=e.target.closest('[data-t]');if(!t)return;menu(false);const v=t.dataset.t;
+  if(v==='add')addSheet();else if(v==='ren'||v==='del')sheetMenu(v);else if(+v!==S.cur)openSheet(+v)});
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#menu,#sbtn'))menu(false)},true);
 $('bLoad').onclick=()=>$('file').click();
 $('file').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)loadFile(f)};
 addEventListener('resize',()=>{layout();if(pad())syncDom();});
 addEventListener('pagehide',persist);
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
-restore();layout();renderAll(false);updCount();
+let th=null;try{th=localStorage.getItem(THEME)}catch(e){}setTheme(th==='d');
+restore();layout();renderAll(false);updCount();renderTabs();
 if(usedCount())$('saved').textContent='✓ letzte Zählung geladen';
 </script>
 </body></html>
