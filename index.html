@@ -172,8 +172,11 @@ function appendMissing(){const L=$('list');for(let i=L.children.length;i<rows.le
 function updCount(){const n=usedCount();$('count').textContent=n+' erfasst';$('bUndo').disabled=!undo.length}
 function scrollToRow(i,smooth){const L=$('list'),el=L.children[i];if(!el)return;
   L.scrollTo({top:el.offsetTop-L.offsetTop-L.clientHeight*0.2,behavior:smooth?'smooth':'auto'})}
-function follow(i){const L=$('list'),el=L.children[i];if(!el)return;
-  const y=el.offsetTop-L.offsetTop-L.scrollTop;if(y>L.clientHeight*0.55)scrollToRow(i,true)}
+// erst scrollen, wenn unter der letzten erfassten Zeile nur noch 2 freie Zeilen sichtbar sind
+function follow(){const L=$('list'),lu=lastUsed();if(lu<0)return;
+  const bottom=L.scrollTop+L.clientHeight;let vis=0;
+  for(let j=lu+1;j<rows.length;j++){const el=L.children[j];if(!el)break;if(el.offsetTop-L.offsetTop+el.offsetHeight*0.5<=bottom)vis++;else break}
+  if(vis<=2)scrollToRow(lu,true)}
 function setAct(i){const L=$('list');if(act>=0&&L.children[act])L.children[act].classList.remove('act');act=i;if(L.children[i])L.children[i].classList.add('act')}
 
 /* ---------- logic ---------- */
@@ -191,7 +194,7 @@ function tap(i,cid,k){
   rows[i].s[cid]=s;rows[i].u=1;
   setAct(i);refreshRow(i);
   if(pad())appendMissing();
-  updCount();persist();follow(i);wake();
+  updCount();persist();follow();wake();
 }
 async function delRow(i){
   if(!await ask(`Radfahrer Nr. ${i+1} löschen? Die Nummern darunter rücken nach.`,[['Abbrechen'],['Löschen','danger',1]]))return;
