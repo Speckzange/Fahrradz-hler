@@ -47,7 +47,8 @@ html.dark .tmr.run{background:#1565C0;color:#fff;border-color:#1565C0}
 .row.gm .grip{background:#1565C0}.row.gw .grip{background:#E91E63}.row.gn .grip{background:#6D4C41}
 .grip svg{width:18px;height:24px}
 .row.free .grip{visibility:hidden}
-.row.drag{z-index:5;filter:drop-shadow(0 12px 18px #0008);opacity:.96}
+.row.drag{z-index:5;box-shadow:0 14px 28px #0007}
+.row.gm.drag{box-shadow:0 0 0 4px #1565C0,0 14px 28px #0007}.row.gw.drag{box-shadow:0 0 0 4px #E91E63,0 14px 28px #0007}.row.gn.drag{box-shadow:0 0 0 4px #6D4C41,0 14px 28px #0007}
 #list.dragging .row:not(.drag){transition:transform .15s}
 /* kein Helm = grau wie "keine" */
 .tile[data-c="h"]:not(.sel){background:#4E5A65;border-color:#4E5A65;color:#fff}
