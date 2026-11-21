@@ -29,7 +29,7 @@ button{font-family:inherit;touch-action:manipulation;cursor:pointer}
 .head .nr{width:52px;text-align:center;align-self:center}
 .head .h{text-align:center;border-radius:8px 8px 0 0;padding:6px 0;color:#fff;margin-right:5px}
 .head .h.q{color:#FFD600;font-size:16px;padding:3px 0}
-#list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:20px;padding:12px 0 0}
+#list{position:relative;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:20px;padding:12px 0 0}
 .row{display:flex;align-items:stretch;background:#fff;box-shadow:0 1px 0 #c3cad1,0 -1px 0 #c3cad1;flex:none}
 
 .row.free{opacity:.5}
@@ -37,8 +37,18 @@ button{font-family:inherit;touch-action:manipulation;cursor:pointer}
 .row{position:relative}
 .row.gm{box-shadow:0 0 0 4px #1565C0}.row.gw{box-shadow:0 0 0 4px #E91E63}.row.gn{box-shadow:0 0 0 4px #6D4C41}
 .row.gm .num{background:#1565C0;color:#fff}.row.gw .num{background:#E91E63;color:#fff}.row.gn .num{background:#6D4C41;color:#fff}
-.row.gm::after,.row.gw::after,.row.gn::after{content:'';position:absolute;right:0;top:0;bottom:0;width:12px}
-.row.gm::after{background:#1565C0}.row.gw::after{background:#E91E63}.row.gn::after{background:#6D4C41}
+/* Timer */
+.tmr{height:44px;min-width:110px;padding:0 14px;border-radius:11px;border:2px solid #1565C0;background:#fff;color:#1565C0;font-size:17px;font-weight:800;white-space:nowrap;margin-left:6px}
+.tmr.run{background:#1565C0;color:#fff;font-size:22px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+html.dark .tmr{background:#1e262e;color:#8ab4f8;border-color:#5b8fd9}
+html.dark .tmr.run{background:#1565C0;color:#fff;border-color:#1565C0}
+/* Zeile verschieben */
+.grip{flex:1 0 28px;display:flex;align-items:center;justify-content:center;color:#fff;touch-action:none;cursor:grab}
+.row.gm .grip{background:#1565C0}.row.gw .grip{background:#E91E63}.row.gn .grip{background:#6D4C41}
+.grip svg{width:18px;height:24px}
+.row.free .grip{visibility:hidden}
+.row.drag{z-index:5;filter:drop-shadow(0 12px 18px #0008);opacity:.96}
+#list.dragging .row:not(.drag){transition:transform .15s}
 /* kein Helm = grau wie "keine" */
 .tile[data-c="h"]:not(.sel){background:#4E5A65;border-color:#4E5A65;color:#fff}
 /* ungewählte Geschlechtsfelder blass eingefärbt */
@@ -115,6 +125,7 @@ html.dark #toast{background:#e8ecf0;color:#0e1318}
     <button class="sbtn" id="sbtn" aria-label="Zählung wählen">🚲 <span class="nm" id="sname">Zählung 1</span><span class="ar">▼</span></button>
     <span class="count" id="count">0 erfasst</span>
     <span class="saved" id="saved"></span>
+    <button class="tmr" id="tmr">▶ Timer starten</button>
     <div class="sp"></div>
     <button class="tb" id="bUndo">↶ Rückgängig</button>
     <button class="tb" id="bSave">💾 Sichern</button>
@@ -182,6 +193,7 @@ const $=id=>document.getElementById(id);
 const svg=n=>`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
 const TRASH='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
 
+const GRIP='<div class="grip" aria-label="Zeile verschieben"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h14"/></svg></div>';
 let rows=[], act=-1, undo=[];
 const blank=()=>({u:0,s:{g:['n'],h:['n'],s:['n'],i:['n'],u:['n'],q:[]}});
 const lastUsed=()=>{for(let i=rows.length-1;i>=0;i--)if(rows[i].u)return i;return -1};
@@ -211,7 +223,7 @@ function snapshot(){undo.push(JSON.stringify(rows));if(undo.length>200)undo.shif
 /* ---------- rendering ---------- */
 function layout(){
   const W=document.getElementById('app').clientWidth;
-  const fixed=52+6*(8+5)+14*4+6;
+  const fixed=52+6*(8+5)+14*4+6+4;
   const tw=Math.max(40,Math.min(70,Math.floor((W-fixed)/19)));
   document.documentElement.style.setProperty('--tw',tw+'px');
   document.documentElement.style.setProperty('--th',Math.round(tw*1.25)+'px');
@@ -222,9 +234,9 @@ function rowHTML(i){
   return `<div class="num">${i+1}<button class="del" data-del="${i}" aria-label="Zeile löschen">${TRASH}</button></div>`+
    CATS.map(c=>`<div class="grp" style="background:${TINT[c.id]}">`+c.opts.map(o=>{
      const on=r.s[c.id].includes(o.k);
-     return `<button class="tile${on?' sel':''}" style="--c:${o.col};--f:${o.fg||'#fff'}" data-i="${i}" data-c="${c.id}" data-k="${o.k}">${svg(o.icon)}<span>${on||!o.off?o.label:o.off}</span></button>`}).join('')+'</div>').join('');
+     return `<button class="tile${on?' sel':''}" style="--c:${o.col};--f:${o.fg||'#fff'}" data-i="${i}" data-c="${c.id}" data-k="${o.k}">${svg(o.icon)}<span>${on||!o.off?o.label:o.off}</span></button>`}).join('')+'</div>').join('')+GRIP;
 }
-function makeRow(i){const d=document.createElement('div');const g=rows[i].s.g[0];d.className='row'+(rows[i].u?'':' free')+(i===act?' act':'')+(rows[i].u&&g==='m'?' gm':'')+(rows[i].u&&g==='w'?' gw':'')+(rows[i].u&&g==='n'?' gn':'');d.innerHTML=rowHTML(i);return d}
+function makeRow(i){const d=document.createElement('div');const G=rows[i].s.g;d.className='row'+(rows[i].u?'':' free')+(i===act?' act':'')+(rows[i].u?(G.includes('m')?' gm':G.includes('w')?' gw':' gn'):'');d.innerHTML=rowHTML(i);return d}
 // genau so viele Zeilen, wie auf den Bildschirm passen, wenn die letzte ausgefüllte Zeile oben steht
 const GAP=20,PADT=12;
 function step(){const r=$('list').children[0];return (r?r.offsetHeight:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--th'))+10)+GAP}
@@ -286,7 +298,14 @@ function toggleTheme(){setTheme(!document.documentElement.classList.contains('da
 function tap(i,cid,k){
   snapshot();const wasNew=!rows[i].u;
   const c=CATS.find(x=>x.id===cid);let s=rows[i].s[cid].slice();
-  if(c.toggle)s=s.includes(k)?[]:[k];
+  if(cid==='g'){                                                    // Mehrfachauswahl, aber nie männlich+weiblich; blau/rosa vor braun
+    if(k==='n'){if(s.some(x=>x!=='n'))s=s.includes('n')?s.filter(x=>x!=='n'):[...s,'n']}
+    else{const opp=k==='m'?'w':'m';
+      if(s.includes(opp))s=s.map(x=>x===opp?k:x);
+      else if(s.includes(k)){s=s.filter(x=>x!==k);if(!s.length)s=['n']}
+      else s=(s.length===1&&s[0]==='n')?[k]:[...s,k];}
+    s.sort((a,b)=>'mwn'.indexOf(a)-'mwn'.indexOf(b));}
+  else if(c.toggle)s=s.includes(k)?[]:[k];
   else if(c.binary)s=s.includes(k)?['n']:[k];
   else if(k==='n')s=['n'];
   else if(c.multi){s=s.filter(x=>x!=='n');s=s.includes(k)?s.filter(x=>x!==k):[...s,k];if(!s.length)s=['n'];}
@@ -427,6 +446,50 @@ function zip(files){
 // Excel: jede Zählung als eigenes Blatt
 function exportXlsx(){persist();const list=S.sheets.filter(x=>cnt(x.rows));if(!list.length){toast('Noch keine Radfahrer erfasst');return}deliver(buildXlsx(list),`Fahrradzaehlung_${stamp()}.xlsx`)}
 
+/* ---------- Zeilen verschieben: am Griff (≡) rechts ziehen ---------- */
+let drag=null;
+$('list').addEventListener('pointerdown',e=>{
+  const g=e.target.closest('.grip');if(!g||drag)return;
+  const row=g.parentElement,i=[...$('list').children].indexOf(row);if(!rows[i]||!rows[i].u)return;
+  e.preventDefault();startDrag(row,i,e.clientY);
+});
+$('list').addEventListener('touchmove',e=>{if(drag)e.preventDefault()},{passive:false});
+$('list').addEventListener('contextmenu',e=>{if(e.target.closest('.grip'))e.preventDefault()});
+function startDrag(row,i,y0){
+  const L=$('list');if(navigator.vibrate)navigator.vibrate(15);
+  const ins=null;
+  drag={row,i,y0,st0:L.scrollTop,y:y0,to:i,ins,raf:0};L.classList.add('dragging');row.classList.add('drag');moveDrag();
+  addEventListener('pointermove',onDragMove);addEventListener('pointerup',endDrag);addEventListener('pointercancel',endDrag);
+  const tick=()=>{if(!drag)return;const r=L.getBoundingClientRect();
+    if(drag.y<r.top+70)L.scrollTop-=10;else if(drag.y>r.bottom-70)L.scrollTop+=10;moveDrag();drag.raf=requestAnimationFrame(tick)};drag.raf=requestAnimationFrame(tick);
+}
+function onDragMove(e){if(!drag)return;drag.y=e.clientY;moveDrag()}
+function moveDrag(){
+  const L=$('list'),d=drag,lu=lastUsed(),top=L.getBoundingClientRect().top;
+  d.row.style.transform=`translateY(${d.y-d.y0+L.scrollTop-d.st0}px)`;
+  const yc=d.y-top+L.scrollTop;let to=0;
+  for(let j=0;j<=lu;j++){if(j===d.i)continue;const c=L.children[j];if(c.offsetTop+c.offsetHeight/2<yc)to++}
+  if(to!==d.to){d.to=to;const h=d.row.offsetHeight+GAP;              // andere Zeilen machen Platz
+    for(let j=0;j<=lu;j++){if(j===d.i)continue;const c=L.children[j];
+      c.style.transform=(j>d.i&&j<=to)?`translateY(${-h}px)`:(j<d.i&&j>=to)?`translateY(${h}px)`:''}}
+}
+function endDrag(){
+  if(!drag)return;const d=drag;drag=null;cancelAnimationFrame(d.raf);
+  removeEventListener('pointermove',onDragMove);removeEventListener('pointerup',endDrag);removeEventListener('pointercancel',endDrag);
+  const L=$('list');L.classList.remove('dragging');[...L.children].forEach(c=>c.style.transform='');d.row.classList.remove('drag');
+  if(d.to===d.i)return;
+  snapshot();const [r]=rows.splice(d.i,1);rows.splice(d.to,0,r);act=-1;renderAll(true);persist();toast(`Nr. ${d.i+1} → Nr. ${d.to+1} verschoben`);
+}
+
+/* ---------- Timer (läuft auch nach Neuladen weiter) ---------- */
+const TKEY='fahrradzaehler_timer';let t0=null,tIv=0;try{t0=+localStorage.getItem(TKEY)||null}catch(e){}
+function tShow(){const b=$('tmr');if(!t0){b.classList.remove('run');b.textContent='▶ Timer starten';return}
+  const sec=Math.max(0,Math.floor((Date.now()-t0)/1000));b.classList.add('run');b.textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')}
+function tRun(){clearInterval(tIv);tShow();if(t0)tIv=setInterval(tShow,250)}
+async function tClick(){
+  if(!t0){t0=Date.now();try{localStorage.setItem(TKEY,t0)}catch(e){}tRun();wake();return}
+  if(await ask(`Timer steht bei ${$('tmr').textContent}. Zurücksetzen?`,[['Weiterlaufen lassen','pri'],['Zurücksetzen','danger',1]])){t0=null;try{localStorage.removeItem(TKEY)}catch(e){}tRun()}}
+
 /* ---------- Bildschirm wach halten ---------- */
 let wl=null;async function wake(){try{if('wakeLock' in navigator&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>wl=null)}}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')wl=null});
@@ -437,7 +500,7 @@ $('list').addEventListener('click',e=>{
   if(t.dataset.del!==undefined){delRow(+t.dataset.del);return}
   if(t.dataset.k)tap(+t.dataset.i,t.dataset.c,t.dataset.k);
 });
-$('bUndo').onclick=doUndo;$('bSave').onclick=backup;$('bXlsx').onclick=exportXlsx;$('bTheme').onclick=toggleTheme;
+$('bUndo').onclick=doUndo;$('bSave').onclick=backup;$('bXlsx').onclick=exportXlsx;$('bTheme').onclick=toggleTheme;$('tmr').onclick=tClick;tRun();
 $('sbtn').onclick=e=>{e.stopPropagation();menu(!$('menu').classList.contains('on'))};
 $('menu').addEventListener('click',e=>{const t=e.target.closest('[data-t]');if(!t)return;menu(false);const v=t.dataset.t;
   if(v==='add')addSheet();else if(v==='ren'||v==='del')sheetMenu(v);else if(+v!==S.cur)openSheet(+v)});
